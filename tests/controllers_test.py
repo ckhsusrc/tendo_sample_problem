@@ -1,5 +1,5 @@
-import datetime
 import json
+import datetime
 import solution.database as db
 from solution.enums import (
     UserType,
@@ -24,7 +24,8 @@ def test_user_object_builder(db_session_maker):
         ev_contact_name = 'personal'
         ev_contact_value = 'ckhsusf@gmail.com'
 
-        obj_builder = UserObjectBuilder(db_session, user_type=ev_user_type)
+        obj_builder = UserObjectBuilder(db_session)
+        obj_builder.set_user_type(ev_user_type)
         obj_builder.set_is_active(ev_is_active)
         obj_builder.set_gender(ev_gender)
         obj_builder.set_birth_date(datetime.datetime.strptime(ev_birth_date, '%Y-%m-%d').date())
@@ -51,7 +52,7 @@ def test_user_object_builder(db_session_maker):
 
     # start a new db_session and verify all the data have been saved to the DB and are properly recalled
     with db.session_scope(db_session_maker) as db_session:
-        obj_builder = UserObjectBuilder(db_session, user_type=None, object_id=test_obj_dict.get('id'))
+        obj_builder = UserObjectBuilder(db_session, object_id=test_obj_dict.get('id'))
         recalled_obj_dict = obj_builder.object.to_dict(db_session)
 
     assert(json.dumps(test_obj_dict, default=str) == json.dumps(recalled_obj_dict, default=str))
