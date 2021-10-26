@@ -27,7 +27,7 @@ class User(Base, DBObjectBase):
     # object id is an UUID, should consider using a datatype (UUID is a 16-byte data structure) for performance
     id = sa.Column(sa.String(36), primary_key=True, default=lambda: str(uuid.uuid1()))
 
-    user_type = sa.Column(sa.Enum(UserType), nullable=False, index=True)
+    user_type = sa.Column(sa.Enum(UserType), nullable=False, index=True, default=UserType.patient)
     is_active = sa.Column(sa.Boolean, nullable=False, default=True)
     birth_date = sa.Column(sa.Date, nullable=True)
     gender = sa.Column(sa.Enum(Gender), nullable=True, index=True)
@@ -98,8 +98,8 @@ class Appointment(Base, DBObjectBase):
     start_time_ts = sa.Column(sa.Integer, nullable=False)
     duration_secs = sa.Column(sa.Integer, nullable=False, default=1800)
     status = sa.Column(sa.Enum(AppointmentStatus), nullable=False, default=AppointmentStatus.scheduled)
-    actor_id = sa.Column(sa.String(36), sa.ForeignKey(User.id, ondelete='CASCADE'), nullable=False)
-    subject_id = sa.Column(sa.String(36), sa.ForeignKey(User.id, ondelete='CASCADE'), nullable=False)
+    actor_id = sa.Column(sa.String(36), sa.ForeignKey(User.id, ondelete='SET NULL'), nullable=True)
+    subject_id = sa.Column(sa.String(36), sa.ForeignKey(User.id, ondelete='SET NULL'), nullable=True)
 
     def to_dict(self, db_session):
         reasons = []
@@ -130,7 +130,7 @@ class Diagnosis(Base, DBObjectBase):
 
     id = sa.Column(sa.String(36), primary_key=True, default=lambda: str(uuid.uuid1()))
 
-    appointment_id = sa.Column(sa.String(36), sa.ForeignKey(Appointment.id, ondelete='CASCADE'), nullable=False)
+    appointment_id = sa.Column(sa.String(36), sa.ForeignKey(Appointment.id, ondelete='SET NULL'), nullable=True)
     last_updated_ts = sa.Column(sa.Integer, nullable=False, default=lambda: int(time.time()))
     status = sa.Column(sa.Enum(DiagnosisStatus), nullable=False, default=DiagnosisStatus.thesis)
 
@@ -176,7 +176,7 @@ class PostAppointmentSurvey(Base, DBObjectBase):
 
     id = sa.Column(sa.String(36), primary_key=True, default=lambda: str(uuid.uuid1()))
 
-    appointment_id = sa.Column(sa.String(36), sa.ForeignKey(Appointment.id, ondelete='CASCADE'), nullable=False)
+    appointment_id = sa.Column(sa.String(36), sa.ForeignKey(Appointment.id, ondelete='SET NULL'), nullable=True)
     recommendation_rating = sa.Column(sa.Integer, nullable=False, default=5)
     is_diagnosis_explained = sa.Column(sa.Boolean, nullable=False, default=False)
     diagnosis_feedback = sa.Column(sa.Text, nullable=True)

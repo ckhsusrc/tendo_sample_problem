@@ -1,9 +1,12 @@
 import time
+from solution.enums import (
+    UserType,
+)
 import solution.models as models
 
 
 class ObjectBuilderBase:
-    def __init__(self, db_session):
+    def __init__(self, db_session, object_id=None):
         self._db_session = db_session
         self._object = None
 
@@ -29,8 +32,8 @@ class ObjectBuilderBase:
 
 
 class UserObjectBuilder(ObjectBuilderBase):
-    def __init__(self, db_session, user_type, object_id=None):
-        super().__init__(db_session)
+    def __init__(self, db_session, object_id=None):
+        super().__init__(db_session, object_id)
 
         if object_id:
             self._object = db_session.query(models.User).filter_by(id=object_id).first()
@@ -38,10 +41,12 @@ class UserObjectBuilder(ObjectBuilderBase):
         if not self._object:
             self._object = models.User(
                 id=object_id,
-                user_type=user_type,
             )
             db_session.add(self._object)
             db_session.flush()
+
+    def set_user_type(self, user_type):
+        self._object.user_type = user_type
 
     def set_is_active(self, is_active):
         self._object.is_active = is_active
@@ -91,8 +96,8 @@ class UserObjectBuilder(ObjectBuilderBase):
 
 
 class AppointmentObjectBuilder(ObjectBuilderBase):
-    def __init__(self, db_session, doctor_user_id, patient_user_id, object_id=None):
-        super().__init__(db_session)
+    def __init__(self, db_session, object_id=None):
+        super().__init__(db_session, object_id)
 
         if object_id:
             self._object = db_session.query(models.Appointment).filter_by(id=object_id).first()
@@ -101,11 +106,15 @@ class AppointmentObjectBuilder(ObjectBuilderBase):
             self._object = models.Appointment(
                 id=object_id,
                 start_time_ts=int(time.time()),
-                actor_id=doctor_user_id,
-                subject_id=patient_user_id,
             )
             db_session.add(self._object)
             db_session.flush()
+
+    def set_doctor_id(self, doctor_id):
+        self._object.actor_id = doctor_id
+
+    def set_patient_id(self, patient_id):
+        self._object.subject_id = patient_id
 
     def set_appointment_time(self, start_time_ts, duration_secs):
         self._object.start_time_ts = start_time_ts
@@ -128,8 +137,8 @@ class AppointmentObjectBuilder(ObjectBuilderBase):
 
 
 class DiagnosisObjectBuilder(ObjectBuilderBase):
-    def __init__(self, db_session, appointment_id, object_id=None):
-        super().__init__(db_session)
+    def __init__(self, db_session, object_id=None):
+        super().__init__(db_session, object_id)
 
         if object_id:
             self._object = db_session.query(models.Diagnosis).filter_by(id=object_id).first()
@@ -137,10 +146,12 @@ class DiagnosisObjectBuilder(ObjectBuilderBase):
         if not self._object:
             self._object = models.Diagnosis(
                 id=object_id,
-                appointment_id=appointment_id,
             )
             db_session.add(self._object)
             db_session.flush()
+
+    def set_appointment_id(self, appointment_id):
+        self._object.appointment_id = appointment_id
 
     def set_status(self, diagnosis_status):
         self._object.status = diagnosis_status
@@ -172,8 +183,8 @@ class DiagnosisObjectBuilder(ObjectBuilderBase):
 
 
 class PostAppointmentSurveyObjectBuilder(ObjectBuilderBase):
-    def __init__(self, db_session, appointment_id, object_id=None):
-        super().__init__(db_session)
+    def __init__(self, db_session, object_id=None):
+        super().__init__(db_session, object_id)
 
         if object_id:
             self._object = db_session.query(models.PostAppointmentSurvey).filter_by(id=object_id).first()
@@ -181,10 +192,12 @@ class PostAppointmentSurveyObjectBuilder(ObjectBuilderBase):
         if not self._object:
             self._object = models.PostAppointmentSurvey(
                 id=object_id,
-                appointment_id=appointment_id,
             )
             db_session.add(self._object)
             db_session.flush()
+
+    def set_appointment_id(self, appointment_id):
+        self._object.appointment_id = appointment_id
 
     def set_recommendation_rating(self, rating):
         self._object.recommendation_rating = rating

@@ -36,10 +36,8 @@ def _conduct_patient_survey(db_session, appointment_summary):
         else:
             diagnosis_text = code.get('name')
 
-    survey_obj_builder = PostAppointmentSurveyObjectBuilder(
-        db_session,
-        appointment_id=appointment_summary.get('appointment', {}).get('id'),
-    )
+    survey_obj_builder = PostAppointmentSurveyObjectBuilder(db_session)
+    survey_obj_builder.set_appointment_id(appointment_summary.get('appointment', {}).get('id'))
 
     while True:
         value = input(f'\nHi {patient_first_name}, on a scale of 1-10, would you recommend Dr {doctor_last_name} '

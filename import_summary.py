@@ -30,11 +30,10 @@ def _get_reference_object_id(reference_obj_dict):
 
 
 def _create_user_object(db_session, user_type, obj_dict):
-    user_obj_builder = UserObjectBuilder(
-        db_session,
-        user_type=user_type,
-        object_id=obj_dict.get('id'),
-    )
+    user_obj_builder = UserObjectBuilder(db_session, object_id=obj_dict.get('id'))
+
+    # user is either a patient or doctor
+    user_obj_builder.set_user_type(user_type)
 
     # convert date string to date object
     if 'birthDate' in obj_dict:
@@ -72,17 +71,15 @@ def _create_user_object(db_session, user_type, obj_dict):
 
 
 def _create_appointment_object(db_session, obj_dict):
+    appt_obj_builder = AppointmentObjectBuilder(db_session, object_id=obj_dict.get('id'))
+
     # parse out actor and subject objects
     # assumption: the referenced objects exists in the DB
     doctor_id = _get_reference_object_id(obj_dict.get('actor', {}))
-    patient_id = _get_reference_object_id(obj_dict.get('subject', {}))
+    appt_obj_builder.set_doctor_id(doctor_id)
 
-    appt_obj_builder = AppointmentObjectBuilder(
-        db_session,
-        doctor_user_id=doctor_id,
-        patient_user_id=patient_id,
-        object_id=obj_dict.get('id'),
-    )
+    patient_id = _get_reference_object_id(obj_dict.get('subject', {}))
+    appt_obj_builder.set_patient_id(patient_id)
 
     # convert period object into timestamp and duration
     period_obj_dict = obj_dict.get('period')
@@ -108,14 +105,11 @@ def _create_appointment_object(db_session, obj_dict):
 
 
 def _create_diagnosis_object(db_session, obj_dict):
+    diagnosis_obj_builder = DiagnosisObjectBuilder(db_session, object_id=obj_dict.get('id'))
 
     # parse out the appointment object
     appt_id = _get_reference_object_id(obj_dict.get('appointment', {}))
-    diagnosis_obj_builder = DiagnosisObjectBuilder(
-        db_session,
-        appointment_id=appt_id,
-        object_id=obj_dict.get('id'),
-    )
+    diagnosis_obj_builder.set_appointment_id(appt_id)
 
     # parse out the last updated timestamp
     last_updated_ts = _convert_iso_date_to_datetime(obj_dict.get('meta', {}).get('lastUpdated')).timestamp()
